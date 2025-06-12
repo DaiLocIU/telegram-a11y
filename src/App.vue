@@ -1,15 +1,20 @@
-<script setup lang="ts">
-import HelloWorld from './components/HelloWorld.vue'
-</script>
 
 <template lang="pug">
-  div.text-3xl.font-bold.text-center.pt-10
-    a(href="https://vite.dev", target="_blank")
-      img.logo(src="/vite.svg", alt="Vite logo")
-    a(href="https://vuejs.org/", target="_blank")
-      img.logo.vue(src="./assets/vue.svg", alt="Vue logo")
-  HelloWorld(msg="Vite + Vue")
+  v-app
+    v-main
+      AuthPhoneNumber
 </template>
+
+
+<script lang="ts">
+import AuthPhoneNumber from './components/auth/AuthPhoneNumber.vue';
+export default {
+  name: 'App',
+  components: {
+    AuthPhoneNumber
+  }
+};
+</script>
 
 <style scoped>
 .logo {

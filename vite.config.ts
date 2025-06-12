@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
+import vuetify from 'vite-plugin-vuetify'
 import tailwindcss from '@tailwindcss/vite'
 import pugPlugin from "vite-plugin-pug"
 
@@ -7,6 +8,9 @@ import pugPlugin from "vite-plugin-pug"
 export default defineConfig({
   plugins: [
     vue(),
+    vuetify({
+      autoImport: true,
+    }),
     tailwindcss(),
     pugPlugin()
   ],
