@@ -2,53 +2,46 @@
     v-autocomplete(
         label="Country"
         v-model="selectedCountry"
-        :items="countries"
+        :items="phoneCodes"
         variant="outlined"
         item-value="code"
-        item-title="name"
+        item-title="defaultName"
         color="primary"
     )
         template(v-slot:item="{ item, props }")
           v-list-item(v-bind="props")
             template(v-slot:title)
-              span {{ item.raw.flag }} {{ item.raw.name }} ({{ item.raw.phone || 'N/A' }})
+              .d-flex.justify-space-between
+                .d-flex.align-center
+                  span {{ item.raw.defaultName || item.name }}
+                span {{ `+${item.raw.countryCode}` }}
 </template>
 <script lang="ts">
-import { defineComponent, ref, onMounted } from 'vue';
+import { defineComponent, ref, onMounted, computed } from 'vue';
+import { storeToRefs } from 'pinia';
 import { useTelegram } from '../composables/useTelegram';
+import useCountryListStore  from '../stores/countryList';
 export default defineComponent({
   name: "CountryCodeInput",
   setup() {
+    const { initClient } = useTelegram()
+    const countryListStore = useCountryListStore()
     const selectedCountry = ref(null);
-    const countries = [
-      { name: "United States", code: "US", flag: "🇺🇸", phone: '+01' },
-      { name: "Canada", code: "CA", flag: "🇨🇦", phone: '+01' },
-      { name: "United Kingdom", code: "GB", flag: "🇬🇧", phone: '+01' },
-      { name: "Australia", code: "AU", flag: "🇦🇺", phone: '+01' },
-      { name: "Germany", code: "DE", flag: "🇩🇪", phone: '+01' },
-      { name: "France", code: "FR", flag: "🇫🇷", phone: '+01' },
-      { name: "Japan", code: "JP", flag: "🇯🇵", phone: '+01'},
-      { name: "China", code: "CN", flag: "🇨🇳" },
-      { name: "India", code: "IN", flag: "🇮🇳" },
-      { name: "Brazil", code: "BR", flag: "🇧🇷" },
-    ];
-
-
-    const { initClient, getClient } = useTelegram()
-
+    const { countryList } = storeToRefs(countryListStore)
+    const phoneCodes = computed(() => countryList.value.phoneCodes || [])
     onMounted(async () => {
       await initClient()
-
-      const client = getClient()
-      console.log('Telegram client initialized:', client)
-      // const me = await client.getMe()
-      // console.log('Logged in as:', me.username)
+      countryListStore.loadCountryList()
     })
 
     return {
       selectedCountry,
-      countries,
+      countryList,
+      phoneCodes,
     };
+  },
+  mounted() {
+      window.__countryCodeInput = this;
   },
 });
 </script>
