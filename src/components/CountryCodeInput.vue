@@ -14,7 +14,8 @@
               span {{ item.raw.flag }} {{ item.raw.name }} ({{ item.raw.phone || 'N/A' }})
 </template>
 <script lang="ts">
-import { defineComponent, ref } from 'vue';
+import { defineComponent, ref, onMounted } from 'vue';
+import { useTelegram } from '../composables/useTelegram';
 export default defineComponent({
   name: "CountryCodeInput",
   setup() {
@@ -30,16 +31,20 @@ export default defineComponent({
       { name: "China", code: "CN", flag: "🇨🇳" },
       { name: "India", code: "IN", flag: "🇮🇳" },
       { name: "Brazil", code: "BR", flag: "🇧🇷" },
-      { name: "Canada", code: "CA" },
-      { name: "United Kingdom", code: "GB" },
-      { name: "Australia", code: "AU" },
-      { name: "Germany", code: "DE" },
-      { name: "France", code: "FR" },
-      { name: "Japan", code: "JP" },
-      { name: "China", code: "CN" },
-      { name: "India", code: "IN" },
-      { name: "Brazil", code: "BR" },
     ];
+
+
+    const { initClient, getClient } = useTelegram()
+
+    onMounted(async () => {
+      await initClient()
+
+      const client = getClient()
+      console.log('Telegram client initialized:', client)
+      // const me = await client.getMe()
+      // console.log('Logged in as:', me.username)
+    })
+
     return {
       selectedCountry,
       countries,
