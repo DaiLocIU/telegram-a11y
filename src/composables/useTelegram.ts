@@ -10,6 +10,7 @@ const sessionKey = "telegram-session";
 export function useTelegram() {
   const { Api } = (window as any).telegram;
   async function initClient() {
+    console.log("Initializing Telegram client...");
     const { TelegramClient, sessions } = (window as any).telegram;
     const { StringSession } = sessions;
 
@@ -38,20 +39,18 @@ export function useTelegram() {
 
   async function fetchCountryList({ langCode = "en" }: { langCode?: string }) {
     const client = getClient();
-    console.log("Fetching country list...", client);
+
     const countryList = await client.invoke(
       new Api.help.GetCountriesList({
         langCode,
       })
     );
-    console.log("Country list fetched:", countryList);
 
     if (!(countryList instanceof Api.help.CountriesList)) {
-        console.log('goo thereeee returning undefined');
       return undefined;
     }
-    console.log("Building API country list...", buildApiCountryList(countryList.countries));
-    return buildApiCountryList(countryList.countries);
+    console.log("Building API country list...", buildApiCountryList(countryList?.countries));
+    return buildApiCountryList(countryList?.countries);
   }
 
   return {
