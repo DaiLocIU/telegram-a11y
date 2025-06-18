@@ -1,8 +1,8 @@
 import type { ApiCountry, ApiCountryCode } from "../api/types";
 
-import { setActivePinia, createPinia } from 'pinia';
-import { describe, test, expect, vi, beforeEach } from 'vitest';
-import countryListStore from './countryList';
+import { setActivePinia, createPinia } from "pinia";
+import { describe, test, expect, vi, beforeEach } from "vitest";
+import countryListStore from "./countryList";
 
 interface CountryListState {
   phoneCodes: ApiCountryCode[];
@@ -10,7 +10,7 @@ interface CountryListState {
 }
 
 // Mock data for the API response
-const mockApiData: CountryListState  = {
+const mockApiData: CountryListState = {
   phoneCodes: [
     {
       name: "United States",
@@ -28,28 +28,26 @@ const mockApiData: CountryListState  = {
 };
 
 // Mock useTelegram composable
-vi.mock('../composables/useTelegram', () => ({
+vi.mock("../composables/useTelegram", () => ({
   useTelegram: () => ({
     fetchCountryList: vi.fn().mockResolvedValue(mockApiData),
   }),
 }));
 
-describe('countryList store', () => {
-  beforeEach(() => {
-    setActivePinia(createPinia());
-  });
+beforeEach(() => {
+  setActivePinia(createPinia());
+});
 
-  test('loadCountryList loads and sets country list state', async () => {
-    const store = countryListStore();
+test("loadCountryList loads and sets country list state", async () => {
+  const store = countryListStore();
 
-    // Initially empty
-    expect(store.countryList.phoneCodes).toEqual([]);
-    expect(store.countryList.general).toEqual([]);
+  // Initially empty
+  expect(store.countryList.phoneCodes).toEqual([]);
+  expect(store.countryList.general).toEqual([]);
 
-    await store.loadCountryList();
+  await store.loadCountryList();
 
-    // After loading, should match mockApiData
-    expect(store.countryList.phoneCodes).toEqual(mockApiData.phoneCodes);
-    expect(store.countryList.general).toEqual(mockApiData.general);
-  });
+  // After loading, should match mockApiData
+  expect(store.countryList.phoneCodes).toEqual(mockApiData.phoneCodes);
+  expect(store.countryList.general).toEqual(mockApiData.general);
 });
