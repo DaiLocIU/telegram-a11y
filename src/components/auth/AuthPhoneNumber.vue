@@ -31,7 +31,6 @@ export default defineComponent({
 
     onMounted(async () => {
       await initClient();
-      console.log('countryListStore', countryListStore);
       countryListStore.loadCountryList();
     });
 

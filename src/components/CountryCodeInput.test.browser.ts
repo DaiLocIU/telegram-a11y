@@ -45,7 +45,7 @@ describe("CountryCodeInput", () => {
         phoneCodes: phoneCodes.value,
       },
     }); 
-    console.log('container', container)
+
     await userEvent.click(container.querySelector('.v-input__control') as HTMLElement)
 
     await nextTick()

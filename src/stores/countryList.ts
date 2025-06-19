@@ -19,14 +19,12 @@ export default defineStore("countryList", () => {
     general: [],
   });
   const loadCountryList = async (): Promise<void> => {
-    console.log('loadCountryList');
+
     const countryListApi = await fetchCountryList({ langCode: "en" });
-    console.log('countryListApi', countryListApi);
+
     if (!countryList) {
-      console.error("Failed to load country list");
       return;
     }
-    console.log('setValue countryList', countryListApi);
     Object.assign(countryList, countryListApi);
     // TODO: implement loading logic here
   }
