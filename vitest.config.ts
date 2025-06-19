@@ -15,9 +15,7 @@ export default defineConfig({
           { browser: 'chromium' },
         ],
       },
-    include: ['**/*.test.browser.ts', '**/*.test.ts'],
-    pool: "vmThreads",
-    css: false,
+    include: ['**/*.test.browser.ts', '**/*.test.ts']
   },
   plugins: [
     vue(),
