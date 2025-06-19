@@ -1,41 +1,41 @@
 import { defineConfig } from 'vitest/config'
-import Vue from '@vitejs/plugin-vue'
-import VueJsx from '@vitejs/plugin-vue-jsx'
-import VueMacros from 'unplugin-vue-macros/vite'
+import vue from '@vitejs/plugin-vue'
+import vuetify from 'vite-plugin-vuetify'
+import tailwindcss from '@tailwindcss/vite'
+import pugPlugin from "vite-plugin-pug"
 
 export default defineConfig({
   plugins: [
-    VueMacros({
-      setupComponent: false,
-      setupSFC: false,
-      plugins: {
-        vue: Vue(),
-        vueJsx: VueJsx(),
-      },
+    vue(),
+    vuetify({
+      autoImport: true,
     }),
+    tailwindcss(),
+    pugPlugin()
   ],
-  optimizeDeps: {
-    disabled: true,
+  resolve: {
+    alias: {
+      '@': '/src',
+    },
   },
   test: {
     projects: [
       {
         test: {
+          environment: 'jsdom',
           // an example of file based convention,
           // you don't have to follow it
-          include: [
-            '/**/*.{test,spec}.ts',
-            '/**/*.unit.{test,spec}.ts',
-          ],
+          setupFiles: ['./vitest.setup.ts'],
+          include: ['**/*.test.ts', '**/*.test.tsx'],
           name: 'unit',
-          environment: 'node',
+          css: false,
         },
       },
       {
         test: {
           environment: 'jsdom',
           setupFiles: ['./vitest.setup.ts'],
-          include: ['**/*.test.browser.{ts,tsx}'],
+          include: ['**/*.test.browser.ts', '**/*.test.browser.tsx'],
           name: 'browser',
           browser: {
             enabled: true,
