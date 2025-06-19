@@ -1,38 +1,50 @@
-import { defineConfig } from 'vitest/config';
-import vue from '@vitejs/plugin-vue'
-import vuetify from 'vite-plugin-vuetify'
-import tailwindcss from '@tailwindcss/vite'
-import pugPlugin from "vite-plugin-pug"
+import { defineConfig } from 'vitest/config'
+import Vue from '@vitejs/plugin-vue'
+import VueJsx from '@vitejs/plugin-vue-jsx'
+import VueMacros from 'unplugin-vue-macros/vite'
 
 export default defineConfig({
-  test: {
-    environment: 'jsdom',
-    setupFiles: ['./vitest.setup.ts'],
-    exclude: [
-      'node_modules',
-      'dist',
-      '**/public/telegram.js',
-      'public/telegram.js',
-      '**/script.js',
-      '**/script.*.js',
-      '**/*.d.ts',
-      '**/coverage/**',
-      '**/.storybook/**',
-    ],
-    pool: "vmThreads",
-    css: false,
-  },
   plugins: [
-    vue(),
-    vuetify({
-      autoImport: true,
+    VueMacros({
+      setupComponent: false,
+      setupSFC: false,
+      plugins: {
+        vue: Vue(),
+        vueJsx: VueJsx(),
+      },
     }),
-    tailwindcss(),
-    pugPlugin()
   ],
-  resolve: {
-    alias: {
-      '@': '/src',
-    },
+  optimizeDeps: {
+    disabled: true,
   },
-});
+  test: {
+    projects: [
+      {
+        test: {
+          // an example of file based convention,
+          // you don't have to follow it
+          include: [
+            '/**/*.{test,spec}.ts',
+            '/**/*.unit.{test,spec}.ts',
+          ],
+          name: 'unit',
+          environment: 'node',
+        },
+      },
+      {
+        test: {
+          environment: 'jsdom',
+          setupFiles: ['./vitest.setup.ts'],
+          include: ['**/*.test.browser.{ts,tsx}'],
+          name: 'browser',
+          browser: {
+            enabled: true,
+            instances: [
+              { browser: 'chromium' },
+            ],
+          },
+        },
+      },
+    ],
+  }
+})

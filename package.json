@@ -6,10 +6,12 @@
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc -b && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "vitest:browser": "npx vitest --browser"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.7",
+    "@testing-library/vue": "^8.1.0",
     "@vue/test-utils": "^2.4.6",
     "autoprefixer": "^10.4.21",
     "pinia": "^3.0.3",
@@ -24,16 +26,20 @@
     "@pinia/testing": "^1.0.2",
     "@types/node": "^24.0.3",
     "@vitejs/plugin-vue": "^5.2.3",
-    "@vitest/browser": "^3.1.4",
+    "@vitejs/plugin-vue-jsx": "^4.2.0",
+    "@vitest/browser": "^3.2.4",
     "@vitest/coverage-v8": "^3.1.4",
     "@vue/tsconfig": "^0.7.0",
     "jsdom": "^26.1.0",
     "playwright": "^1.52.0",
+    "resize-observer-polyfill": "^1.5.1",
     "sass": "^1.89.2",
     "typescript": "~5.8.3",
+    "unplugin-vue-macros": "^2.14.5",
     "vite": "^6.3.5",
     "vite-plugin-pug": "^0.4.1",
     "vitest": "^3.1.4",
-    "vue-tsc": "^2.2.8"
+    "vue-tsc": "^2.2.8",
+    "webdriverio": "^9.15.0"
   }
 }

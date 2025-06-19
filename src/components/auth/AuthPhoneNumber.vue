@@ -1,14 +1,47 @@
 <template lang="pug">
     div(class="max-w-[400px] flex mt-4 mx-auto")
-        CountryCodeInput()
+        CountryCodeInput(
+            v-model="selectedCountry"
+            :phone-codes="phoneCodes"
+        )
 </template>
 <script>
-import { defineComponent } from 'vue';
-import CountryCodeInput from '../CountryCodeInput.vue';
+import { defineComponent, ref, computed, onMounted } from "vue";
+import { storeToRefs } from 'pinia';
+import { useTelegram } from '../../composables/useTelegram';
+import useCountryListStore  from '../../stores/countryList';
+import CountryCodeInput from "../CountryCodeInput.vue";
+
 export default defineComponent({
-    name: 'AuthPhoneNumber',
-    components: {
-        CountryCodeInput
-    }
+  name: "AuthPhoneNumber",
+  components: {
+    CountryCodeInput,
+  },
+  setup() {
+    const { initClient } = useTelegram();
+    const countryListStore = useCountryListStore();
+    const selectedCountry = ref(null);
+    const { countryList } = storeToRefs(countryListStore);
+    const phoneCodes = computed(() =>
+      (countryList.value.phoneCodes || []).map((item) => ({
+        ...item,
+        id: `${item.countryCode}_${item.iso2}`, // Unique ID for each country code
+      }))
+    );
+
+    onMounted(async () => {
+      await initClient();
+      console.log('countryListStore', countryListStore);
+      countryListStore.loadCountryList();
+    });
+
+    return {
+      selectedCountry,
+      phoneCodes: [
+    { id: 1, countryCode: "1", iso2: "US", defaultName: "United States" },
+    { id: 2, countryCode: "84", iso2: "VN", defaultName: "Vietnam" },
+  ]
+    };
+  },
 });
 </script>

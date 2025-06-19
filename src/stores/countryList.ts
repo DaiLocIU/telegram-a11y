@@ -19,6 +19,7 @@ export default defineStore("countryList", () => {
     general: [],
   });
   const loadCountryList = async (): Promise<void> => {
+    console.log('loadCountryList');
     const countryListApi = await fetchCountryList({ langCode: "en" });
     console.log('countryListApi', countryListApi);
     if (!countryList) {

@@ -19,33 +19,26 @@
                 span.text-sm.font-medium.opacity-50 {{ `+${item.raw.countryCode}` }}
 </template>
 <script lang="ts">
-import { defineComponent, ref, onMounted, computed } from 'vue';
-import { storeToRefs } from 'pinia';
+import { defineComponent, ref } from 'vue';
 import { isoToEmoji } from '../utils/emoji/emoji'
-import { useTelegram } from '../composables/useTelegram';
-import useCountryListStore  from '../stores/countryList';
 
 export default defineComponent({
   name: "CountryCodeInput",
-  setup() {
-    const { initClient } = useTelegram()
-    const countryListStore = useCountryListStore()
-    const selectedCountry = ref(null);
-    const { countryList } = storeToRefs(countryListStore)
-    const phoneCodes = computed(() => (countryList.value.phoneCodes || []).map((item) => ({
-      ...item,
-      id: `${item.countryCode}_${item.iso2}`, // Unique ID for each country code
-    })));
-
-    onMounted(async () => {
-      await initClient()
-      countryListStore.loadCountryList()
-    })
+  props: {
+    value: {
+      type: Object,
+      default: null,
+    },
+    phoneCodes: {
+      type: Array,
+      default: () => [],
+    },
+  },
+  setup(props) {
+    const selectedCountry = ref(props.value);
 
     return {
       selectedCountry,
-      countryList,
-      phoneCodes,
       isoToEmoji
     };
   },
