@@ -1,80 +1,127 @@
-
-import { ref } from "vue";
+import { ref, nextTick } from "vue";
 import { mount, flushPromises } from "@vue/test-utils";
-import { nextTick } from "vue";
-import { describe, test, expect, vi } from "vitest";
+import { describe, test, expect, vi, beforeEach, afterEach } from "vitest";
 import CountryCodeInput from "./CountryCodeInput.vue";
 import { createVuetify } from "vuetify";
-import {  userEvent, screen } from '../test/index';
-import { findAllByRole, render } from '@testing-library/vue'
-import { VAutocomplete } from "vuetify/components";
-
+import { userEvent, screen } from "../test/index";
+import type { VueWrapper } from "@vue/test-utils";
 
 // Mock isoToEmoji utility
 vi.mock("../utils/emoji/emoji", () => ({
-  isoToEmoji: (iso2: string) => `:${iso2}:`
+  isoToEmoji: (iso2: string) => `:${iso2}:`,
 }));
 
-describe("CountryCodeInput", () => {
-  const phoneCodes = ref([
-    { id: 1, countryCode: "1", iso2: "US", defaultName: "United States" },
-    { id: 2, countryCode: "84", iso2: "VN", defaultName: "Vietnam" },
-  ]);
-  
-  // render with props and right label
-  test("renders with placeholder", () => {
-    const wrapper = mount(CountryCodeInput, {
-      global: {
-        plugins: [createVuetify()],
-      },
-      props: {
-        phoneCodes: phoneCodes.value,
-      },
-    });
-    const vLabel = wrapper.find("label.v-field-label");
+// Sample phone codes
+const phoneCodes = ref([
+  { id: 1, countryCode: "1", iso2: "US", defaultName: "United States" },
+  { id: 2, countryCode: "84", iso2: "VN", defaultName: "Vietnam" },
+]);
 
-    expect(vLabel.exists()).toBe(true);
-    expect(vLabel.text()).toBe("Country");
+let wrapper: VueWrapper<any>;
+
+const createComponent = () => {
+  return mount(CountryCodeInput, {
+    global: {
+      plugins: [createVuetify()],
+    },
+    props: {
+      phoneCodes: phoneCodes.value,
+    },
   });
-  test("clicks on country code input", async () => {
-    const { container } = render(CountryCodeInput, {
-      global: {
-        plugins: [createVuetify()],
-      },
-      props: {
-        phoneCodes: phoneCodes.value,
-      },
-    }); 
+};
 
-    await userEvent.click(container.querySelector('.v-input__control') as HTMLElement)
+beforeEach(() => {
+  wrapper = createComponent();
+});
+describe("CountryCodeInput", () => {
+  test("renders with label", () => {
+    const label = wrapper.find("label.v-field-label");
 
-    await nextTick()
-    // vi.runAllTimers()
+    expect(label.exists()).toBe(true);
+    expect(label.text()).toBe("Country");
+  });
 
-    console.log('screen.debug()', screen.debug())
-    // await nextTick()
-    // const input = wrapper.find('input');
-    // console.log('input', input.html())
+  test("shows dropdown with country list on input click", async () => {
+    const input = wrapper.find("input");
+    await userEvent.click(input.element);
 
-    // await wrapper.find('input').trigger('focus')
+    await nextTick();
+    await flushPromises();
 
+    const menu = await screen.findByRole("listbox");
+    const listItems = menu.querySelectorAll(".v-list-item");
 
-    // await nextTick()
+    expect(listItems.length).toBe(2);
 
+    expect(listItems[0].textContent).toContain("United States");
+    expect(listItems[0].textContent).toContain("US");
 
-    // console.log('screen', document.body)
-    // screen.debug()
-    // const activeItems = await findAllByRole(menu, 'option', { selected: true })
+    expect(listItems[1].textContent).toContain("Vietnam");
+    expect(listItems[1].textContent).toContain("VN");
+  });
+  test("selects country and updates input value", async () => {
+    const input = wrapper.find("input");
+    await userEvent.click(input.element);
 
+    await nextTick();
+    await flushPromises();
 
-    expect(true).toBe(true)
+    const menu = await screen.findByRole("listbox");
+    const listItems = menu.querySelectorAll(".v-list-item");
 
-    
-    
-    // const menu = await screen.findByRole('listbox')
+    // Select the first item (United States)
+    await userEvent.click(listItems[0]);
 
-    // let activeItems = await findAllByRole(menu, 'option', { selected: true })
-    // expect(activeItems).toHaveLength(1)
-    // expect(container.html()).toContain("Country");
-  })
+    expect(input.element.value).toBe("United States");
+
+    const emittedValue = wrapper.emitted("update:modelValue")?.[0][0];
+
+    expect(wrapper.emitted("update:modelValue")).toBeTruthy();
+    expect(emittedValue).toEqual(phoneCodes.value[0]);
+
+    await nextTick();
+    await flushPromises();
+
+    // Check if the dropdown is closed after selection
+    const listbox = screen.queryByRole("listbox");
+    expect(listbox).toBeNull();
+  });
+
+  test("emit a lot of times", async () => {
+    const input = wrapper.find("input");
+    await userEvent.click(input.element);
+
+    await nextTick();
+    await flushPromises();
+
+    const menu = await screen.findByRole("listbox");
+    const listItems = menu.querySelectorAll(".v-list-item");
+
+    // Select the first item (United States)
+    await userEvent.click(listItems[0]);
+
+    expect(input.element.value).toBe("United States");
+
+    const emittedValue = wrapper.emitted("update:modelValue")?.[0][0];
+
+    expect(wrapper.emitted("update:modelValue")).toBeTruthy();
+    expect(emittedValue).toEqual(phoneCodes.value[0]);
+
+    await userEvent.click(input.element);
+    await flushPromises();
+
+    // Get fresh menu and list items again
+    const menu2 = await screen.findByRole("listbox");
+    const listItems2 = menu2.querySelectorAll(".v-list-item");
+
+    // Select Vietnam
+    await userEvent.click(listItems2[1]);
+    await flushPromises();
+
+    expect(input.element.value).toBe("Vietnam");
+    expect(wrapper.emitted("update:modelValue")?.[1][0]).toEqual(phoneCodes.value[1]);
+
+    // Assert total emits
+    expect(wrapper.emitted("update:modelValue")).toHaveLength(2);
+  });
 });

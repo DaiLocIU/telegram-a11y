@@ -8,6 +8,7 @@
         item-title="defaultName"
         item-value="id"
         color="primary"
+        @update:modelValue="handleUpdate"
     )
         template(v-slot:item="{ item, props }")
           v-list-item(v-bind="props")
@@ -34,12 +35,18 @@ export default defineComponent({
       default: () => [],
     },
   },
-  setup(props) {
+  setup(props, { emit }) {
     const selectedCountry = ref(props.value);
-
+    const handleUpdate = (value: any) => {
+      console.log('value1234', value);
+      selectedCountry.value = value;
+      // Emit the update to the parent component
+      emit('update:modelValue', value);
+    };
     return {
       selectedCountry,
-      isoToEmoji
+      isoToEmoji,
+      handleUpdate
     };
   },
   mounted() {

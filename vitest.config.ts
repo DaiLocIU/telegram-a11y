@@ -14,6 +14,7 @@ export default defineConfig({
         instances: [
           { browser: 'chromium' },
         ],
+        headless: false,
       },
     include: ['**/*.test.browser.ts', '**/*.test.ts']
   },
