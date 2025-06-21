@@ -8,9 +8,9 @@
 <script>
 import { defineComponent, ref, computed, onMounted } from "vue";
 import { storeToRefs } from 'pinia';
-import { useTelegram } from '../../composables/useTelegram';
-import useCountryListStore  from '../../stores/countryList';
-import CountryCodeInput from "../CountryCodeInput.vue";
+import { useTelegram } from '@/composables/useTelegram';
+import useCountryListStore  from '@/stores/countryList';
+import CountryCodeInput from "@/components/CountryCodeInput.vue";
 
 export default defineComponent({
   name: "AuthPhoneNumber",
@@ -36,10 +36,7 @@ export default defineComponent({
 
     return {
       selectedCountry,
-      phoneCodes: [
-    { id: 1, countryCode: "1", iso2: "US", defaultName: "United States" },
-    { id: 2, countryCode: "84", iso2: "VN", defaultName: "Vietnam" },
-  ]
+      phoneCodes: phoneCodes,
     };
   },
 });

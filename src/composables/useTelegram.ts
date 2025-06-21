@@ -1,5 +1,5 @@
 import { ref } from "vue";
-import { buildApiCountryList } from "../api/gramjs/apiBuilders";
+import { buildApiCountryList } from "@/api/gramjs/apiBuilders";
 
 const apiId = parseInt(import.meta.env.VITE_API_ID);
 const apiHash = import.meta.env.VITE_API_HASH;

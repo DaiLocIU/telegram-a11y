@@ -4,14 +4,15 @@ import { describe, test, expect, vi, beforeEach, afterEach } from "vitest";
 import CountryCodeInput from "./CountryCodeInput.vue";
 import { createVuetify } from "vuetify";
 import { userEvent, screen } from "../test/index";
+import { waitFor } from "@testing-library/vue";
 import type { VueWrapper } from "@vue/test-utils";
+
 
 // Mock isoToEmoji utility
 vi.mock("../utils/emoji/emoji", () => ({
   isoToEmoji: (iso2: string) => `:${iso2}:`,
 }));
 
-// Sample phone codes
 const phoneCodes = ref([
   { id: 1, countryCode: "1", iso2: "US", defaultName: "United States" },
   { id: 2, countryCode: "84", iso2: "VN", defaultName: "Vietnam" },
@@ -19,109 +20,104 @@ const phoneCodes = ref([
 
 let wrapper: VueWrapper<any>;
 
-const createComponent = () => {
+function setupComponent(props: Record<string, any> = {}) {
   return mount(CountryCodeInput, {
-    global: {
-      plugins: [createVuetify()],
-    },
-    props: {
-      phoneCodes: phoneCodes.value,
-    },
+    global: { plugins: [createVuetify()] },
+    props: { phoneCodes: phoneCodes.value, ...props },
   });
-};
+}
 
-beforeEach(() => {
-  wrapper = createComponent();
-});
+async function openDropdown(wrapper: VueWrapper<any>) {
+  const input = wrapper.find("input");
+  await userEvent.click(input.element);
+  await flushPromises();
+  return screen.findByRole("listbox");
+}
+
+function getListItems(menu: HTMLElement) {
+  return menu.querySelectorAll(".v-list-item");
+}
+
 describe("CountryCodeInput", () => {
-  test("renders with label", () => {
-    const label = wrapper.find("label.v-field-label");
+  beforeEach(() => {
+    wrapper = setupComponent()
+  })
+  afterEach(() => {
+    if (wrapper) wrapper.unmount();
+  });
 
+  test("renders the label correctly", () => {
+    const label = wrapper.find("label.v-field-label");
     expect(label.exists()).toBe(true);
     expect(label.text()).toBe("Country");
   });
 
-  test("shows dropdown with country list on input click", async () => {
-    const input = wrapper.find("input");
-    await userEvent.click(input.element);
+  test("does not show a selection when no default value is provided", () => {
+    const selectionText = wrapper.find(".v-autocomplete__selection-text");
+    expect(selectionText.exists()).toBe(false);
+  });
 
-    await nextTick();
-    await flushPromises();
+  test("shows the selected country when a default value is provided", () => {
+    wrapper = setupComponent({
+      modelValue: phoneCodes.value[0],
+    });
+    const selectionText = wrapper.find(".v-autocomplete__selection-text");
+    expect(selectionText.exists()).toBe(true);
+    expect(selectionText.text()).toBe("United States");
+  });
 
-    const menu = await screen.findByRole("listbox");
-    const listItems = menu.querySelectorAll(".v-list-item");
+  test("displays country list dropdown when input is clicked", async () => {
+    const menu = await openDropdown(wrapper);
+    const listItems = getListItems(menu);
 
     expect(listItems.length).toBe(2);
 
     expect(listItems[0].textContent).toContain("United States");
-    expect(listItems[0].textContent).toContain("US");
+    expect(listItems[0].textContent).toContain(":US:");
+    expect(listItems[0].textContent).toContain("+1");
 
     expect(listItems[1].textContent).toContain("Vietnam");
-    expect(listItems[1].textContent).toContain("VN");
-  });
-  test("selects country and updates input value", async () => {
-    const input = wrapper.find("input");
-    await userEvent.click(input.element);
-
-    await nextTick();
-    await flushPromises();
-
-    const menu = await screen.findByRole("listbox");
-    const listItems = menu.querySelectorAll(".v-list-item");
-
-    // Select the first item (United States)
-    await userEvent.click(listItems[0]);
-
-    expect(input.element.value).toBe("United States");
-
-    const emittedValue = wrapper.emitted("update:modelValue")?.[0][0];
-
-    expect(wrapper.emitted("update:modelValue")).toBeTruthy();
-    expect(emittedValue).toEqual(phoneCodes.value[0]);
-
-    await nextTick();
-    await flushPromises();
-
-    // Check if the dropdown is closed after selection
-    const listbox = screen.queryByRole("listbox");
-    expect(listbox).toBeNull();
+    expect(listItems[1].textContent).toContain(":VN:");
+    expect(listItems[1].textContent).toContain("+84");
   });
 
-  test("emit a lot of times", async () => {
-    const input = wrapper.find("input");
-    await userEvent.click(input.element);
+  test("emits update:modelValue and updates input when a country is selected", async () => {
+    const menu = await openDropdown(wrapper);
+    const listItems = getListItems(menu);
 
-    await nextTick();
-    await flushPromises();
-
-    const menu = await screen.findByRole("listbox");
-    const listItems = menu.querySelectorAll(".v-list-item");
-
-    // Select the first item (United States)
     await userEvent.click(listItems[0]);
 
-    expect(input.element.value).toBe("United States");
+    await nextTick();
+    flushPromises();
 
-    const emittedValue = wrapper.emitted("update:modelValue")?.[0][0];
+    expect(wrapper.find("input").element.value).toBe("United States");
+    expect(wrapper.emitted("update:modelValue")?.[0][0]).toEqual(phoneCodes.value[0]);
 
-    expect(wrapper.emitted("update:modelValue")).toBeTruthy();
-    expect(emittedValue).toEqual(phoneCodes.value[0]);
+    
+    await waitFor(() => {
+      expect(screen.queryByRole("listbox")).toBeNull()
+    });
+  });
 
-    await userEvent.click(input.element);
-    await flushPromises();
+  test("emits update:modelValue multiple times when selecting different countries", async () => {
 
-    // Get fresh menu and list items again
-    const menu2 = await screen.findByRole("listbox");
-    const listItems2 = menu2.querySelectorAll(".v-list-item");
+    // Select first country
+    let menu = await openDropdown(wrapper);
+    let listItems = getListItems(menu);
+    await userEvent.click(listItems[0]);
+    await nextTick();
 
-    // Select Vietnam
-    await userEvent.click(listItems2[1]);
-    await flushPromises();
+    expect(wrapper.find("input").element.value).toBe("United States");
+    expect(wrapper.emitted("update:modelValue")?.[0][0]).toEqual(phoneCodes.value[0]);
 
-    expect(input.element.value).toBe("Vietnam");
+    // Select second country
+    menu = await openDropdown(wrapper);
+    listItems = getListItems(menu);
+    await userEvent.click(listItems[1]);
+    await nextTick();
+
+    expect(wrapper.find("input").element.value).toBe("Vietnam");
     expect(wrapper.emitted("update:modelValue")?.[1][0]).toEqual(phoneCodes.value[1]);
-
-    // Assert total emits
     expect(wrapper.emitted("update:modelValue")).toHaveLength(2);
   });
 });

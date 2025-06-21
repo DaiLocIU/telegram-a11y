@@ -21,12 +21,12 @@
 </template>
 <script lang="ts">
 import { defineComponent, ref } from 'vue';
-import { isoToEmoji } from '../utils/emoji/emoji'
+import { isoToEmoji } from '@/utils/emoji/emoji';
 
 export default defineComponent({
   name: "CountryCodeInput",
   props: {
-    value: {
+    modelValue: {
       type: Object,
       default: null,
     },
@@ -36,11 +36,10 @@ export default defineComponent({
     },
   },
   setup(props, { emit }) {
-    const selectedCountry = ref(props.value);
+    const selectedCountry = ref(props.modelValue);
+
     const handleUpdate = (value: any) => {
-      console.log('value1234', value);
       selectedCountry.value = value;
-      // Emit the update to the parent component
       emit('update:modelValue', value);
     };
     return {

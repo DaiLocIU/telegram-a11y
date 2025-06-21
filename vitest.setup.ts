@@ -11,5 +11,6 @@ config.global.stubs = {}
 // Automatically unmount all mounted components after each test
 afterEach(() => {
   cleanup()
+  console.log('Cleanup after test')
   document.body.innerHTML = '' // Optional hard reset
 })
