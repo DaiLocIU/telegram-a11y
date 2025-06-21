@@ -21,7 +21,7 @@
 </template>
 <script lang="ts">
 import { defineComponent, ref } from 'vue';
-import { isoToEmoji } from '@/utils/emoji/emoji';
+import { isoToEmoji } from '../utils/emoji/emoji';
 
 export default defineComponent({
   name: "CountryCodeInput",
@@ -47,9 +47,6 @@ export default defineComponent({
       isoToEmoji,
       handleUpdate
     };
-  },
-  mounted() {
-      window.__countryCodeInput = this;
   },
 });
 </script>
