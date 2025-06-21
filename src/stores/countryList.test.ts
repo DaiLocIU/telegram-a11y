@@ -1,7 +1,7 @@
 import type { ApiCountry, ApiCountryCode } from "../api/types";
 
 import { setActivePinia, createPinia } from "pinia";
-import { describe, test, expect, vi, beforeEach } from "vitest";
+import { test, expect, vi, beforeEach } from "vitest";
 import countryListStore from "./countryList";
 
 interface CountryListState {
