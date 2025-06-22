@@ -56,6 +56,9 @@ export default defineComponent({
 
     const fullNumber = computed(() => {
       console.log("Computing full number:", countryCode.value, phoneNumber.value);
+      if (!countryCode.value || !phoneNumber.value) {
+        return "";
+      }
       return `${countryCode.value} ${phoneNumber.value}`;
     });
     const handleUpdateFullNumber = (e) => {
