@@ -9,7 +9,7 @@
     )
 </template>
 <script>
-import { defineComponent, ref, watch } from 'vue';
+import { defineComponent, ref, watch } from "vue";
 export default defineComponent({
   name: "TextNumberPhone",
   props: {
@@ -18,17 +18,19 @@ export default defineComponent({
       default: "",
     },
   },
-  emits: ['update:fullNumber'],
+  emits: ["update:fullNumber"],
   setup(props) {
     const fullNumber = ref(props.value);
 
-    watch(() => props.value, (newValue) => {
-      fullNumber.value = newValue;
-    });
-
+    watch(
+      () => props.value,
+      (newValue) => {
+        fullNumber.value = newValue;
+      }
+    );
 
     return {
-      fullNumber
+      fullNumber,
     };
   },
 });

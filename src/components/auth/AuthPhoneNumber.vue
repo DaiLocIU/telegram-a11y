@@ -13,18 +13,17 @@
 </template>
 <script>
 import { defineComponent, ref, computed, onMounted, nextTick } from "vue";
-import { storeToRefs } from 'pinia';
-import { useTelegram } from '@/composables/useTelegram';
-import useCountryListStore  from '@/stores/countryList';
+import { storeToRefs } from "pinia";
+import { useTelegram } from "@/composables/useTelegram";
+import useCountryListStore from "@/stores/countryList";
 import CountryCodeInput from "@/components/auth/CountryCodeInput.vue";
 import TextNumberPhone from "@/components/auth/TextNumberPhone.vue";
-
 
 export default defineComponent({
   name: "AuthPhoneNumber",
   components: {
     CountryCodeInput,
-    TextNumberPhone
+    TextNumberPhone,
   },
   setup() {
     const textNumberPhoneRef = ref(null);
@@ -41,29 +40,28 @@ export default defineComponent({
 
     const selectedCountry = ref(null);
     const handleChangeSelectedCountry = () => {
-      phoneNumber.value = '';
+      phoneNumber.value = "";
       nextTick(() => {
-        const input = textNumberPhoneRef.value.$el.querySelector('input');
+        const input = textNumberPhoneRef.value.$el.querySelector("input");
         if (input) {
           input.focus();
         }
       });
-      
     };
     // Full phone number
     const countryCode = computed(() => {
-      return selectedCountry.value ? `+${selectedCountry.value.countryCode}` : '';
+      return selectedCountry.value ? `+${selectedCountry.value.countryCode}` : "";
     });
-    const phoneNumber = ref('');
+    const phoneNumber = ref("");
 
     const fullNumber = computed(() => {
-      console.log('Computing full number:', countryCode.value, phoneNumber.value);
+      console.log("Computing full number:", countryCode.value, phoneNumber.value);
       return `${countryCode.value} ${phoneNumber.value}`;
     });
     const handleUpdateFullNumber = (e) => {
-      console.log('Full number updated:', e);
+      console.log("Full number updated:", e);
     };
-    
+
     onMounted(async () => {
       await initClient();
       countryListStore.loadCountryList();
