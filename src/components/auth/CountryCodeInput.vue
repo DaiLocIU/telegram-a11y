@@ -8,6 +8,7 @@
         item-title="defaultName"
         item-value="id"
         color="primary"
+        no-data-text="Country not found"
         @update:modelValue="handleUpdate"
     )
         template(v-slot:item="{ item, props }")
