@@ -3,7 +3,7 @@ import { mount, flushPromises } from "@vue/test-utils";
 import { describe, test, expect, vi, beforeEach, afterEach } from "vitest";
 import CountryCodeInput from "./CountryCodeInput.vue";
 import { createVuetify } from "vuetify";
-import { userEvent, screen } from "../test/index";
+import { userEvent, screen } from "../../test/index";
 import { waitFor } from "@testing-library/vue";
 import type { VueWrapper } from "@vue/test-utils";
 

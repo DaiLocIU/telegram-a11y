@@ -16,6 +16,9 @@ export default defineConfig({
     vue(),
     vuetify({
       autoImport: true,
+      styles: {
+        configFile: 'src/assets/settings.scss',
+      },
     }),
     tailwindcss(),
     pugPlugin()

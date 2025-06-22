@@ -1,21 +1,24 @@
 <template lang="pug">
-    div(class="max-w-[400px] flex mt-4 mx-auto")
+    v-form.w-full.max-w-sm.mx-auto.pt-24.px-4
         CountryCodeInput(
             v-model="selectedCountry"
             :phone-codes="phoneCodes"
         )
+        TextNumberPhone
 </template>
 <script>
 import { defineComponent, ref, computed, onMounted } from "vue";
 import { storeToRefs } from 'pinia';
 import { useTelegram } from '@/composables/useTelegram';
 import useCountryListStore  from '@/stores/countryList';
-import CountryCodeInput from "@/components/CountryCodeInput.vue";
+import CountryCodeInput from "@/components/auth/CountryCodeInput.vue";
+import TextNumberPhone from "@/components/auth/TextNumberPhone.vue";
 
 export default defineComponent({
   name: "AuthPhoneNumber",
   components: {
     CountryCodeInput,
+    TextNumberPhone
   },
   setup() {
     const { initClient } = useTelegram();
