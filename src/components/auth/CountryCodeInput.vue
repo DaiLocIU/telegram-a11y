@@ -36,6 +36,7 @@ export default defineComponent({
       default: () => [],
     },
   },
+  emits: ['update:modelValue'],
   setup(props, { emit }) {
     const selectedCountry = ref(props.modelValue);
 

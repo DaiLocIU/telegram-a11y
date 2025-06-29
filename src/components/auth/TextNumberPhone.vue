@@ -5,11 +5,12 @@
       variant="outlined"
       v-model="fullNumber"
       type="tel"
-      @update:modelValue="handleChange"
+      @update:modelValue="onChange"
     )
 </template>
 <script lang="ts">
 import { defineComponent, ref, watch } from "vue";
+
 export default defineComponent({
   name: "TextNumberPhone",
   props: {
@@ -28,7 +29,7 @@ export default defineComponent({
         fullNumber.value = newValue;
       }
     );
-    const handleChange = (value: string) => {
+    const onChange = (value: string) => {
       console.log("Handling change in TextNumberPhone:", value);
       fullNumber.value = value;
       // Emit the updated full number
@@ -37,7 +38,7 @@ export default defineComponent({
 
     return {
       fullNumber,
-      handleChange,
+      onChange,
     };
   },
 });
