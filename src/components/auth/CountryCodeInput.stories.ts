@@ -11,8 +11,8 @@ const meta = {
   component: CountryCodeInput,
   args: {
     phoneCodes: [
-      { id: 1, countryCode: "1", iso2: "US", defaultName: "United States" },
-      { id: 2, countryCode: "84", iso2: "VN", defaultName: "Vietnam" },
+      { countryCode: "1", iso2: "US", defaultName: "United States" },
+      { countryCode: "84", iso2: "VN", defaultName: "Vietnam" },
     ],
     [onUpdateModelValue]: fn(),
   },

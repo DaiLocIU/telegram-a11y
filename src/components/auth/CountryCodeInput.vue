@@ -23,6 +23,7 @@
 <script lang="ts">
 import { defineComponent, ref } from 'vue';
 import { isoToEmoji } from '../../utils/emoji/emoji';
+import type { ApiCountryCode } from '../../api/types';
 
 export default defineComponent({
   name: "CountryCodeInput",
@@ -32,7 +33,7 @@ export default defineComponent({
       default: null,
     },
     phoneCodes: {
-      type: Array,
+      type: Array as () => ApiCountryCode[],
       default: () => [],
     },
   },
@@ -40,7 +41,7 @@ export default defineComponent({
   setup(props, { emit }) {
     const selectedCountry = ref(props.modelValue);
 
-    const handleUpdate = (value: any) => {
+    const handleUpdate = (value: ApiCountryCode) => {
       selectedCountry.value = value;
       emit('update:modelValue', value);
     };

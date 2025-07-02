@@ -26,6 +26,7 @@ export default defineComponent({
     watch(
       () => props.value,
       (newValue) => {
+        console.log("Watching value change in TextNumberPhone:", newValue);
         fullNumber.value = newValue;
       }
     );

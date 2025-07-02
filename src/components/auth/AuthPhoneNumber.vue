@@ -11,13 +11,19 @@
           ref="textNumberPhoneRef"
         )
 </template>
-<script>
-import { defineComponent, ref, computed, onMounted, nextTick } from "vue";
+<script lang="ts">
+import { defineComponent, ref, computed, nextTick, watch } from "vue";
 import { storeToRefs } from "pinia";
-import { useTelegram } from "@/composables/useTelegram";
-import useCountryListStore from "@/stores/countryList";
-import CountryCodeInput from "@/components/auth/CountryCodeInput.vue";
-import TextNumberPhone from "@/components/auth/TextNumberPhone.vue";
+import useCountryListStore from "../../stores/countryList";
+import CountryCodeInput from "../../components/auth/CountryCodeInput.vue";
+import TextNumberPhone from "../../components/auth/TextNumberPhone.vue";
+import type { ApiCountryCode } from '../../api/types';
+
+interface Country {
+  countryCode: string;
+  iso2: string;
+  [key: string]: any;
+}
 
 export default defineComponent({
   name: "AuthPhoneNumber",
@@ -26,11 +32,11 @@ export default defineComponent({
     TextNumberPhone,
   },
   setup() {
-    const textNumberPhoneRef = ref(null);
-    const { initClient } = useTelegram();
+    const textNumberPhoneRef = ref<InstanceType<typeof TextNumberPhone> | null>(null);
     // countryListStore
     const countryListStore = useCountryListStore();
     const { countryList } = storeToRefs(countryListStore);
+
     const phoneCodes = computed(() =>
       (countryList.value.phoneCodes || []).map((item) => ({
         ...item,
@@ -38,13 +44,20 @@ export default defineComponent({
       }))
     );
 
-    const selectedCountry = ref(null);
-    const handleChangeSelectedCountry = () => {
+    const selectedCountry = ref<Country | null>(null);
+
+    const phoneNumber = ref("");
+
+    const fullNumber = ref("");
+
+    const handleChangeSelectedCountry = (value: ApiCountryCode) => {
       phoneNumber.value = "";
       nextTick(() => {
-        const input = textNumberPhoneRef.value.$el.querySelector("input");
-        if (input) {
-          input.focus();
+        if (textNumberPhoneRef.value && textNumberPhoneRef.value.$el) {
+          const input = textNumberPhoneRef.value.$el.querySelector("input");
+          if (input) {
+            input.focus();
+          }
         }
       });
     };
@@ -52,23 +65,19 @@ export default defineComponent({
     const countryCode = computed(() => {
       return selectedCountry.value ? `+${selectedCountry.value.countryCode}` : "";
     });
-    const phoneNumber = ref("");
 
-    const fullNumber = computed(() => {
-      console.log("Computing full number:", countryCode.value, phoneNumber.value);
-      if (!countryCode.value || !phoneNumber.value) {
-        return "";
+    watch(selectedCountry, (newValue) => {
+      console.log("Selected country changed:", newValue);
+      if (newValue) {
+        fullNumber.value = `${countryCode.value} ${phoneNumber.value}`;
+      } else {
+        fullNumber.value = "";
       }
-      return `${countryCode.value} ${phoneNumber.value}`;
     });
-    const handleUpdateFullNumber = (e) => {
+
+    const handleUpdateFullNumber = (e: EventTarget) => {
       console.log("Full number updated:", e);
     };
-
-    onMounted(async () => {
-      await initClient();
-      countryListStore.loadCountryList();
-    });
 
     return {
       selectedCountry,
@@ -77,6 +86,8 @@ export default defineComponent({
       handleUpdateFullNumber,
       textNumberPhoneRef,
       phoneCodes: phoneCodes,
+      countryCode,
+      phoneNumber,
     };
   },
 });

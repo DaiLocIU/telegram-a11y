@@ -7,11 +7,24 @@
 
 
 <script lang="ts">
+import { onMounted } from 'vue';
 import AuthPhoneNumber from './components/auth/AuthPhoneNumber.vue';
+import { useTelegram } from './composables/useTelegram';
+import useCountryListStore from './stores/countryList';
 export default {
   name: 'App',
   components: {
     AuthPhoneNumber
+  },
+  setup() {
+    // You can initialize any global state or perform setup tasks here
+    const { initClient } = useTelegram();
+    const countryListStore = useCountryListStore();
+    onMounted(async () => {
+      // Initialize the Telegram client when the app is mounted
+      await initClient();
+      countryListStore.loadCountryList();
+    });
   }
 };
 </script>

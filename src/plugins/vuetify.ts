@@ -1,8 +1,8 @@
-import 'vuetify/styles';
 import { createVuetify } from "vuetify";
 import { type ThemeDefinition } from 'vuetify';
 import '@mdi/font/css/materialdesignicons.css';
 import '../assets/vuetify.scss'
+import 'vuetify/styles'
 
 
 export default createVuetify({
