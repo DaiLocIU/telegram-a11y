@@ -77,7 +77,7 @@ export const MainFlow: Story = {
             expect(canvas.getByRole('textbox').value).toBe("United States");
 
             expect(args[onUpdateModelValue]).toHaveBeenCalledTimes(1);
-            expect(args[onUpdateModelValue]).toHaveBeenCalledWith({ id: 1, countryCode: "1", iso2: "US", defaultName: "United States" });
+            expect(args[onUpdateModelValue]).toHaveBeenCalledWith({ countryCode: "1", iso2: "US", defaultName: "United States" });
             
             step('checks that the dropdown is closed after selection', () => {
                 expect(document.querySelector('[role="listbox"]')).toBeNull();
@@ -89,7 +89,7 @@ export const MainFlow: Story = {
         })
 
         await step('chooses a different country', async () => {
-            await   openDropdown(canvas);
+            await openDropdown(canvas);
             const listbox = document.querySelector('[role="listbox"]');
             const items = getListItems(listbox as HTMLElement);
             await userEvent.click(items[1]);
@@ -98,7 +98,7 @@ export const MainFlow: Story = {
             
             expect(canvas.getByRole('textbox').value).toBe("Vietnam");
             expect(args[onUpdateModelValue]).toHaveBeenCalledTimes(2);
-            expect(args[onUpdateModelValue]).toHaveBeenNthCalledWith(2, { id: 2, countryCode: "84", iso2: "VN", defaultName: "Vietnam" });
+            expect(args[onUpdateModelValue]).toHaveBeenNthCalledWith(2, {countryCode: "84", iso2: "VN", defaultName: "Vietnam" });
 
             step('checks that the dropdown is closed after selection', () => {
                 expect(document.querySelector('[role="listbox"]')).toBeNull();
@@ -135,21 +135,12 @@ export const DefaultValue: Story = {
         expect(canvas.getByRole('textbox').value).toBe("Vietnam");
 
         expect(args[onUpdateModelValue]).toHaveBeenCalledTimes(1);
-        expect(args[onUpdateModelValue]).toHaveBeenNthCalledWith(1, { id: 2, countryCode: "84", iso2: "VN", defaultName: "Vietnam" });
+        expect(args[onUpdateModelValue]).toHaveBeenNthCalledWith(1, { countryCode: "84", iso2: "VN", defaultName: "Vietnam" });
 
         step('checks that the dropdown is closed after selection', () => {
             expect(document.querySelector('[role="listbox"]')).toBeNull();
         });
     })
-    // const canvas = within(canvasElement);
-    // console.log('canvasElement', canvasElement);
-    // const loginButton = canvas.getByRole('button', { name: /Log in/i });
-    // await expect(loginButton).toBeInTheDocument();
-    // await userEvent.click(loginButton);
-    // await expect(loginButton).not.toBeInTheDocument();
-
-    // const logoutButton = canvas.getByRole('button', { name: /Log out/i });
-    // await expect(logoutButton).toBeInTheDocument();
   },
 };
 

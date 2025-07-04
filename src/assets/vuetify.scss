@@ -1,10 +1,10 @@
 // VField
 
 .v-field {
-    border-radius: var(--v-field-border-radius);
+    border-radius: var(--v-field-border-radius) !important;
 }
 .v-menu > .v-overlay__content {
-    border-radius: var(--v-field-border-radius);
+    border-radius: var(--v-field-border-radius) !important;
 }
 
 .custom-scroll,

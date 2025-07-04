@@ -13,11 +13,10 @@
 </template>
 <script lang="ts">
 import { defineComponent, ref, computed, nextTick, watch } from "vue";
-import { storeToRefs } from "pinia";
-import useCountryListStore from "../../stores/countryList";
 import CountryCodeInput from "../../components/auth/CountryCodeInput.vue";
 import TextNumberPhone from "../../components/auth/TextNumberPhone.vue";
-import type { ApiCountryCode } from '../../api/types';
+import type { ApiCountryCode } from "../../api/types";
+import { getCountryFromPhoneNumber } from "../../utils/phoneNumber";
 
 interface Country {
   countryCode: string;
@@ -27,23 +26,19 @@ interface Country {
 
 export default defineComponent({
   name: "AuthPhoneNumber",
+  props: {
+    phoneCodes: {
+      type: Array as () => ApiCountryCode[],
+      required: true,
+    },
+  },
   components: {
     CountryCodeInput,
     TextNumberPhone,
   },
-  setup() {
+  setup(props) {
     const textNumberPhoneRef = ref<InstanceType<typeof TextNumberPhone> | null>(null);
     // countryListStore
-    const countryListStore = useCountryListStore();
-    const { countryList } = storeToRefs(countryListStore);
-
-    const phoneCodes = computed(() =>
-      (countryList.value.phoneCodes || []).map((item) => ({
-        ...item,
-        id: `${item.countryCode}_${item.iso2}`, // Unique ID for each country code
-      }))
-    );
-
     const selectedCountry = ref<Country | null>(null);
 
     const phoneNumber = ref("");
@@ -75,8 +70,30 @@ export default defineComponent({
       }
     });
 
-    const handleUpdateFullNumber = (e: EventTarget) => {
-      console.log("Full number updated:", e);
+    const handleUpdateFullNumber = (newFullNumber: string) => {
+      if (!newFullNumber.length) {
+        phoneNumber.value = "";
+      }
+      const suggestedCountry =
+        props.phoneCodes && getCountryFromPhoneNumber(props.phoneCodes, newFullNumber);
+
+      console.log("Suggested country from phone number:", suggestedCountry);
+      // // Any phone numbers should be allowed, in some cases ignoring formatting
+      const newCountry =
+        !selectedCountry.value ||
+        (suggestedCountry && suggestedCountry.iso2 !== selectedCountry.value.iso2) ||
+        (!suggestedCountry && newFullNumber.length)
+          ? suggestedCountry
+          : selectedCountry.value;
+      console.log("New country after update:", newCountry);
+      if (
+        !newCountry ||
+        !selectedCountry.value ||
+        (newCountry && newCountry.iso2 !== selectedCountry.value.iso2)
+      ) {
+
+        selectedCountry.value = newCountry;
+      }
     };
 
     return {
@@ -85,7 +102,6 @@ export default defineComponent({
       fullNumber,
       handleUpdateFullNumber,
       textNumberPhoneRef,
-      phoneCodes: phoneCodes,
       countryCode,
       phoneNumber,
     };

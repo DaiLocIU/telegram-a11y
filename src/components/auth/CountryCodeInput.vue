@@ -1,5 +1,6 @@
 <template lang="pug">
     v-autocomplete(
+        ref="countryCodeInputRef"
         label="Country"
         v-model="selectedCountry"
         :items="phoneCodes"
@@ -21,9 +22,10 @@
                 span.text-sm.font-medium.opacity-50 {{ `+${item.raw.countryCode}` }}
 </template>
 <script lang="ts">
-import { defineComponent, ref } from 'vue';
-import { isoToEmoji } from '../../utils/emoji/emoji';
-import type { ApiCountryCode } from '../../api/types';
+import { defineComponent, onMounted, ref, watch } from "vue";
+import { isoToEmoji } from "../../utils/emoji/emoji";
+import type { ApiCountryCode } from "../../api/types";
+import { on } from "events";
 
 export default defineComponent({
   name: "CountryCodeInput",
@@ -37,18 +39,56 @@ export default defineComponent({
       default: () => [],
     },
   },
-  emits: ['update:modelValue'],
+  emits: ["update:modelValue"],
   setup(props, { emit }) {
+    const countryCodeInputRef = ref(null);
     const selectedCountry = ref(props.modelValue);
 
-    const handleUpdate = (value: ApiCountryCode) => {
-      selectedCountry.value = value;
-      emit('update:modelValue', value);
+    const forceUpdateUI = (newValue) => {
+      if (!newValue) {
+        const vInputEl = countryCodeInputRef.value.$el;
+        const vFieldEl = vInputEl.querySelector(".v-field");
+        vInputEl.classList.remove("v-input--dirty", "v-input--is-active");
+        vFieldEl.classList.remove("v-field--dirty", "v-field--is-active");
+
+        const inputEl = vInputEl.querySelector("input");
+        inputEl.value = "";
+        inputEl.dispatchEvent(new Event("input", { bubbles: true }));
+        return;
+      }
+
+      const vInputEl = countryCodeInputRef.value.$el;
+      const inputEl = vInputEl.querySelector("input");
+      inputEl.value = newValue["defaultName"];
+      inputEl.dispatchEvent(new Event("input", { bubbles: true }));
     };
+
+    watch(
+      () => props.modelValue,
+      (newValue) => {
+        selectedCountry.value = newValue;
+        console.log("Model value changed:", newValue);
+        if (!newValue) {
+        }
+        forceUpdateUI(newValue);
+        // selectedCountryChange.value += 1; // Trigger re-render
+      }
+    );
+
+    const handleUpdate = (value: ApiCountryCode) => {
+      console.log("handleUpdate", value);
+      selectedCountry.value = value;
+      emit("update:modelValue", value);
+    };
+
+    onMounted(() => {
+      console.log("countryCodeInputRef", countryCodeInputRef.value);
+    });
     return {
       selectedCountry,
       isoToEmoji,
-      handleUpdate
+      handleUpdate,
+      countryCodeInputRef,
     };
   },
 });
