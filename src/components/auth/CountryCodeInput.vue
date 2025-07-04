@@ -76,7 +76,11 @@ export default defineComponent({
     );
 
     const handleUpdate = (value: ApiCountryCode) => {
-      console.log("handleUpdate", value);
+      if (value === props.modelValue) {
+        console.log("No change in selected country, skipping update.");
+        return
+      }
+      console.log("handleUpdateee", value);
       selectedCountry.value = value;
       emit("update:modelValue", value);
     };

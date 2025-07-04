@@ -24,10 +24,10 @@ type Story = StoryObj<typeof meta>;
 
 // --- Helper functions ---
 async function getCountryInput(canvasEl: ReturnType<typeof within>) {
-  return await canvasEl.getByRole('textbox', { name: /country/i });
+  return await canvasEl.getByLabelText(/country/i);
 }
-function getPhoneInput(canvasEl: ReturnType<typeof within>) {
-  return canvasEl.getByRole('textbox', { name: 'Your phone number' });
+async function getPhoneInput(canvasEl: ReturnType<typeof within>) {
+  return await canvasEl.getByLabelText(/your phone number/i);
 }
 function getListItems() {
   const listbox = document.querySelector('[role="listbox"]');
@@ -38,15 +38,12 @@ export const MainFlow: Story = {
   play: async ({
     canvasElement,
     step,
-  }: {
-    canvasElement: HTMLElement;
-    step: (name: string, fn: () => Promise<void> | void) => Promise<void>;
-  }) => {
+  }: any) => {
     const canvasEl = within(canvasElement);
 
     await step('renders both inputs with correct labels', async () => {
       expect(await getCountryInput(canvasEl)).toBeInTheDocument();
-      expect(getPhoneInput(canvasEl)).toBeInTheDocument();
+      expect(await getPhoneInput(canvasEl)).toBeInTheDocument();
     });
 
     await step('shows country dropdown on country input click', async () => {
@@ -66,19 +63,19 @@ export const MainFlow: Story = {
       await flushPromises();
       console.log('countryInput', countryInput);
       expect(countryInput.value).toBe('United States');
-      const phoneInput = getPhoneInput(canvasEl);
+      const phoneInput = await getPhoneInput(canvasEl);
       expect(phoneInput).toHaveFocus();
       expect(phoneInput.value).toBe('+1 ');
     });
+    
 
     await step('clears phone input and country resets', async () => {
       const countryInput = await getCountryInput(canvasEl);
-      const phoneInput = getPhoneInput(canvasEl);
+      const phoneInput = await getPhoneInput(canvasEl);
       await userEvent.type(phoneInput, '{backspace}{backspace}{backspace}{backspace}');
       await flushPromises();
       expect(countryInput.value).toBe('');
       expect(phoneInput.value).toBe('');
-    //   expect(countryInput.value).toBe(''); // it only clears the country input value if country input is focused
       const selectionText = canvasElement.querySelector(".v-autocomplete__selection-text");
       console.log('selectionText', selectionText);
       expect(selectionText).toBeNull();
@@ -86,12 +83,31 @@ export const MainFlow: Story = {
 
     await step('types new country code and country autofills', async () => {
       const countryInput = await getCountryInput(canvasEl);
-      const phoneInput = getPhoneInput(canvasEl);
+      const phoneInput = await getPhoneInput(canvasEl);
       await userEvent.type(phoneInput, '+84');
       await flushPromises();
       expect(phoneInput.value).toBe('+84 ');
       console.log('countryInput', countryInput);
       expect(countryInput.value).toBe('Vietnam');
     });
+
+    
+    await step('removes country code digits and resets country selection', async () => {  
+        const countryInput = await getCountryInput(canvasEl);
+        const phoneInput = await getPhoneInput(canvasEl);
+        await userEvent.type(phoneInput, '{backspace}{backspace}');
+        await flushPromises();
+        expect(phoneInput.value).toBe('+8');
+        expect(countryInput.value).toBe('');
+    })
+
+    await step('type country code and auto fills country selection', async () => {
+      const countryInput = await getCountryInput(canvasEl);
+      const phoneInput = await getPhoneInput(canvasEl);
+      await userEvent.type(phoneInput, '4');
+      await flushPromises();
+      expect(phoneInput.value).toBe('+84 ');
+      expect(countryInput.value).toBe('Vietnam');
+    })
   }
 };

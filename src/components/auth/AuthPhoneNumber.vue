@@ -12,17 +12,11 @@
         )
 </template>
 <script lang="ts">
-import { defineComponent, ref, computed, nextTick, watch } from "vue";
+import { defineComponent, ref, computed, nextTick, watch, watchEffect } from "vue";
 import CountryCodeInput from "../../components/auth/CountryCodeInput.vue";
 import TextNumberPhone from "../../components/auth/TextNumberPhone.vue";
 import type { ApiCountryCode } from "../../api/types";
-import { getCountryFromPhoneNumber } from "../../utils/phoneNumber";
-
-interface Country {
-  countryCode: string;
-  iso2: string;
-  [key: string]: any;
-}
+import { getCountryFromPhoneNumber, formatPhoneNumber } from "../../utils/phoneNumber";
 
 export default defineComponent({
   name: "AuthPhoneNumber",
@@ -39,11 +33,11 @@ export default defineComponent({
   setup(props) {
     const textNumberPhoneRef = ref<InstanceType<typeof TextNumberPhone> | null>(null);
     // countryListStore
-    const selectedCountry = ref<Country | null>(null);
+    const selectedCountry = ref<ApiCountryCode | null>(null);
 
     const phoneNumber = ref("");
 
-    const fullNumber = ref("");
+    // const fullNumber = ref("");
 
     const handleChangeSelectedCountry = (value: ApiCountryCode) => {
       phoneNumber.value = "";
@@ -61,31 +55,30 @@ export default defineComponent({
       return selectedCountry.value ? `+${selectedCountry.value.countryCode}` : "";
     });
 
-    watch(selectedCountry, (newValue) => {
-      console.log("Selected country changed:", newValue);
-      if (newValue) {
-        fullNumber.value = `${countryCode.value} ${phoneNumber.value}`;
-      } else {
-        fullNumber.value = "";
+    const fullNumber = computed(() => {
+      if (!selectedCountry.value) {
+        return phoneNumber.value;
       }
+      return `${countryCode.value} ${phoneNumber.value || ''}`;
     });
 
     const handleUpdateFullNumber = (newFullNumber: string) => {
+      if (newFullNumber === fullNumber.value) {
+        return;
+      }
       if (!newFullNumber.length) {
         phoneNumber.value = "";
       }
       const suggestedCountry =
         props.phoneCodes && getCountryFromPhoneNumber(props.phoneCodes, newFullNumber);
 
-      console.log("Suggested country from phone number:", suggestedCountry);
       // // Any phone numbers should be allowed, in some cases ignoring formatting
-      const newCountry =
+      const newCountry: ApiCountryCode =
         !selectedCountry.value ||
         (suggestedCountry && suggestedCountry.iso2 !== selectedCountry.value.iso2) ||
         (!suggestedCountry && newFullNumber.length)
           ? suggestedCountry
           : selectedCountry.value;
-      console.log("New country after update:", newCountry);
       if (
         !newCountry ||
         !selectedCountry.value ||
@@ -94,6 +87,7 @@ export default defineComponent({
 
         selectedCountry.value = newCountry;
       }
+      phoneNumber.value = formatPhoneNumber(newFullNumber, selectedCountry.value);
     };
 
     return {
