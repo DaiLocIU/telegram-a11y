@@ -8,8 +8,8 @@ const meta = {
   component: AuthPhoneNumber,
   args: {
     phoneCodes: [
-      { countryCode: "1", iso2: "US", defaultName: "United States" },
-      { countryCode: "84", iso2: "VN", defaultName: "Vietnam" },
+      { countryCode: "1", iso2: "US", defaultName: "United States", patterns: ['XXX XXX XXXX'] },
+      { countryCode: "84", iso2: "VN", defaultName: "Vietnam", patterns: null },
     ],
   },
   render: (args: any) => ({
@@ -32,6 +32,10 @@ async function getPhoneInput(canvasEl: ReturnType<typeof within>) {
 function getListItems() {
   const listbox = document.querySelector('[role="listbox"]');
   return listbox ? listbox.querySelectorAll('.v-list-item') : [];
+}
+
+function backSpaceAllInput(count: number) {
+  return Array.from({ length: count }, () => '{backspace}').join('');
 }
 
 export const MainFlow: Story = {
@@ -109,5 +113,21 @@ export const MainFlow: Story = {
       expect(phoneInput.value).toBe('+84 ');
       expect(countryInput.value).toBe('Vietnam');
     })
+
+    await step('types Vietnam phone number and applies default pattern', async () => {
+      const phoneInput = await getPhoneInput(canvasEl);
+      await userEvent.type(phoneInput, '123456789');
+      await flushPromises();
+      expect(phoneInput.value).toBe('+84 123 456 789');
+    })
+
+    await step('clears phone input and type USA phone number and applies USA pattern', async () => {
+      const phoneInput = await getPhoneInput(canvasEl);
+      await userEvent.type(phoneInput, backSpaceAllInput(phoneInput.value.length));
+
+      await userEvent.type(phoneInput, '+1 1234567890');
+      await flushPromises();
+      expect(phoneInput.value).toBe('+1 123 456 7890');
+    });
   }
 };
