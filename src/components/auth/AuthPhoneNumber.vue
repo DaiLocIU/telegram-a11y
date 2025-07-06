@@ -1,5 +1,7 @@
 <template lang="pug">
-    v-form.w-full.max-w-sm.mx-auto.pt-24.px-4
+    v-form.w-full.max-w-sm.mx-auto.pt-24.px-4(
+      @submit.prevent="handleSubmit"
+    )
         CountryCodeInput(
             v-model="selectedCountry"
             :phone-codes="phoneCodes"
@@ -10,6 +12,14 @@
           @update:fullNumber="handleUpdateFullNumber"
           ref="textNumberPhoneRef"
         )
+        v-btn.w-full(
+          v-if="canSubmit"
+          type="submit"
+          color="primary"
+          size="large"
+        ) Next
+
+
 </template>
 <script lang="ts">
 import { defineComponent, ref, computed, nextTick, watch, watchEffect } from "vue";
@@ -17,6 +27,10 @@ import CountryCodeInput from "../../components/auth/CountryCodeInput.vue";
 import TextNumberPhone from "../../components/auth/TextNumberPhone.vue";
 import type { ApiCountryCode } from "../../api/types";
 import { getCountryFromPhoneNumber, formatPhoneNumber } from "../../utils/phoneNumber";
+import { useTelegram } from "@/composables/useTelegram";
+import useAuthStore from "@/stores/auth";
+
+const MIN_NUMBER_LENGTH = 7;
 
 export default defineComponent({
   name: "AuthPhoneNumber",
@@ -31,6 +45,9 @@ export default defineComponent({
     TextNumberPhone,
   },
   setup(props) {
+    const { sendCode } = useTelegram();
+    const authStore = useAuthStore();
+
     const textNumberPhoneRef = ref<InstanceType<typeof TextNumberPhone> | null>(null);
     // countryListStore
     const selectedCountry = ref<ApiCountryCode | null>(null);
@@ -59,7 +76,14 @@ export default defineComponent({
       if (!selectedCountry.value) {
         return phoneNumber.value;
       }
-      return `${countryCode.value} ${phoneNumber.value || ''}`;
+      return `${countryCode.value} ${phoneNumber.value || ""}`;
+    });
+
+    const canSubmit = computed(() => {
+      return (
+        fullNumber.value &&
+        fullNumber.value.replace(/[^\d]+/g, "").length >= MIN_NUMBER_LENGTH
+      );
     });
 
     const handleUpdateFullNumber = (newFullNumber: string) => {
@@ -84,20 +108,35 @@ export default defineComponent({
         !selectedCountry.value ||
         (newCountry && newCountry.iso2 !== selectedCountry.value.iso2)
       ) {
-
         selectedCountry.value = newCountry;
       }
       phoneNumber.value = formatPhoneNumber(newFullNumber, selectedCountry.value);
+    };
+
+    const handleSubmit = () => {
+      sendCode(fullNumber.value)
+        .then((res) => {
+          console.log("sendCode response:", res);
+          authStore.onRequestCode(res.phoneCodeHash);
+          // Handle successful code sending
+          console.log("Code sent successfully");
+        })
+        .catch((error) => {
+          // Handle error in sending code
+          console.error("Error sending code:", error);
+        });
     };
 
     return {
       selectedCountry,
       handleChangeSelectedCountry,
       fullNumber,
+      canSubmit,
       handleUpdateFullNumber,
       textNumberPhoneRef,
       countryCode,
       phoneNumber,
+      handleSubmit
     };
   },
 });

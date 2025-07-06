@@ -30,6 +30,9 @@ export default createVuetify({
     },
     VList: {
       class: 'custom-scroll'
+    },
+    VBtn: {
+      flat: true
     }
   }
 });

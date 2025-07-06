@@ -9,7 +9,7 @@ const meta = {
   args: {
     phoneCodes: [
       { countryCode: "1", iso2: "US", defaultName: "United States", patterns: ['XXX XXX XXXX'] },
-      { countryCode: "84", iso2: "VN", defaultName: "Vietnam", patterns: null },
+      { countryCode: "84", iso2: "VN", defaultName: "Vietnam", patterns: undefined },
     ],
   },
   render: (args: any) => ({

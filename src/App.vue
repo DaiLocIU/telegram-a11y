@@ -7,11 +7,23 @@
 </template>
 
 <script lang="ts">
-import { onMounted, computed } from "vue";
+import { onMounted, computed, watch, ref } from "vue";
 import { storeToRefs } from "pinia";
 import AuthPhoneNumber from "./components/auth/AuthPhoneNumber.vue";
 import { useTelegram } from "./composables/useTelegram";
 import useCountryListStore from "./stores/countryList";
+import useConnectionStore from "./stores/connection";
+import useAuthStore from "./stores/auth";
+import Auth from "./components/auth/Auth.vue";
+import Main from "./components/main/Main.vue";
+
+enum AppScreens {
+  auth,
+  main,
+  lock,
+  inactive,
+}
+
 export default {
   name: "App",
   components: {
@@ -20,9 +32,43 @@ export default {
   setup() {
     // You can initialize any global state or perform setup tasks here
     const { initClient } = useTelegram();
-    const countryListStore = useCountryListStore();
 
+    const countryListStore = useCountryListStore();
     const { countryList } = storeToRefs(countryListStore);
+
+    const connectionStore = useConnectionStore();
+    const { connectionState } = storeToRefs(connectionStore);
+
+    const authStore = useAuthStore();
+    const { authState } = storeToRefs(authStore);
+
+    const activeKey = ref<AppScreens>(AppScreens.auth);
+
+    watch(authState, (newState) => {
+      console.log("Auth state changed:", newState);
+      if (newState === "authorizationStateWaitPhoneNumber") {
+        activeKey.value = AppScreens.auth;
+      } else if (newState === "authorizationStateWaitCode") {
+        activeKey.value = AppScreens.auth;
+      } else if (newState === "authorizationStateReady") {
+        activeKey.value = AppScreens.main;
+      } else {
+        activeKey.value = AppScreens.inactive;
+      }
+    });
+
+    const componentProps = computed(() => {
+      switch (activeKey.value) {
+        case AppScreens.auth:
+          return { is: Auth };
+        case AppScreens.main:
+          return { is: Main };
+        case AppScreens.lock:
+        case AppScreens.inactive:
+        default:
+          return { is: null };
+      }
+    });
 
     const phoneCodes = computed(() =>
       (countryList.value.phoneCodes || []).map((item) => ({
@@ -30,11 +76,13 @@ export default {
         id: `${item.countryCode}_${item.iso2}`, // Unique ID for each country code
       }))
     );
-
+    watch(connectionState, (newState) => {
+      console.log("Connection state changed:", newState);
+      countryListStore.loadCountryList();
+    });
     onMounted(async () => {
       // Initialize the Telegram client when the app is mounted
       await initClient();
-      countryListStore.loadCountryList();
     });
     return {
       phoneCodes,
