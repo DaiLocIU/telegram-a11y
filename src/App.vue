@@ -1,9 +1,7 @@
 <template lang="pug">
   v-app
     v-main
-      AuthPhoneNumber(
-        :phone-codes="phoneCodes"
-      )
+      component(:is="componentProps.is" v-bind="componentProps.props")
 </template>
 
 <script lang="ts">
@@ -34,7 +32,6 @@ export default {
     const { initClient } = useTelegram();
 
     const countryListStore = useCountryListStore();
-    const { countryList } = storeToRefs(countryListStore);
 
     const connectionStore = useConnectionStore();
     const { connectionState } = storeToRefs(connectionStore);
@@ -45,17 +42,19 @@ export default {
     const activeKey = ref<AppScreens>(AppScreens.auth);
 
     watch(authState, (newState) => {
-      console.log("Auth state changed:", newState);
-      if (newState === "authorizationStateWaitPhoneNumber") {
-        activeKey.value = AppScreens.auth;
-      } else if (newState === "authorizationStateWaitCode") {
-        activeKey.value = AppScreens.auth;
-      } else if (newState === "authorizationStateReady") {
-        activeKey.value = AppScreens.main;
-      } else {
-        activeKey.value = AppScreens.inactive;
-      }
-    });
+        console.log("Auth state changed:", newState);
+        if (newState === "authorizationStateWaitPhoneNumber") {
+          activeKey.value = AppScreens.auth;
+        } else if (newState === "authorizationStateWaitCode") {
+          activeKey.value = AppScreens.auth;
+        } else if (newState === "authorizationStateReady") {
+          activeKey.value = AppScreens.main;
+        } else {
+          activeKey.value = AppScreens.inactive;
+        }
+      },
+      { immediate: true }
+    );
 
     const componentProps = computed(() => {
       switch (activeKey.value) {
@@ -70,12 +69,7 @@ export default {
       }
     });
 
-    const phoneCodes = computed(() =>
-      (countryList.value.phoneCodes || []).map((item) => ({
-        ...item,
-        id: `${item.countryCode}_${item.iso2}`, // Unique ID for each country code
-      }))
-    );
+    
     watch(connectionState, (newState) => {
       console.log("Connection state changed:", newState);
       countryListStore.loadCountryList();
@@ -85,7 +79,7 @@ export default {
       await initClient();
     });
     return {
-      phoneCodes,
+      componentProps,
     };
   },
 };

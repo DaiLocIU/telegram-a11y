@@ -41,6 +41,16 @@ export function useTelegram() {
 
 
     localStorage.setItem(sessionKey, client.value.session.save());
+
+    authStore.onAuthReady();
+
+    const currentUser = await client.value.invoke(
+      new Api.users.GetFullUser({
+        id: new Api.InputUserSelf(),
+      })
+    )
+
+    authStore.updateCurrentUser(currentUser);
   }
 
   function getClient() {
@@ -73,13 +83,52 @@ export function useTelegram() {
       })
     )
     console.log('sendCodeResult', sendCodeResult);
-    return sendCodeResult;
+    return {
+      phoneNumber,
+      ...sendCodeResult
+    };
+  }
+
+  async function signIn({
+    phoneNumber,
+    phoneCodeHash,
+    phoneCode
+  }: {
+    phoneNumber: string;
+    phoneCodeHash: string;
+    phoneCode: string;
+  }) {
+    const client = getClient();
+    const result = await client.invoke(
+      new Api.auth.SignIn({
+        phoneNumber,
+        phoneCodeHash,
+        phoneCode
+      })
+    );
+    console.log('signIn result', result);
+    localStorage.setItem(sessionKey, client.session.save());
+    
+
+    authStore.onAuthReady();
+
+    console.log('authStore.onAuthReady', authStore.onAuthReady);
+
+    const currentUser = await client.invoke(
+      new Api.users.GetFullUser({
+        id: new Api.InputUserSelf(),
+      })
+    )
+
+    authStore.updateCurrentUser(currentUser);
+    console.log('signIn result', result);
   }
 
   return {
     initClient,
     getClient,
     fetchCountryList,
-    sendCode
+    sendCode,
+    signIn
   };
 }

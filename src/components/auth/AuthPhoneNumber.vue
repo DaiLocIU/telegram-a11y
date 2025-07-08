@@ -117,7 +117,11 @@ export default defineComponent({
       sendCode(fullNumber.value)
         .then((res) => {
           console.log("sendCode response:", res);
-          authStore.onRequestCode(res.phoneCodeHash);
+
+          authStore.onRequestCode({
+            phoneHash: res.phoneCodeHash,
+            phone: res.phoneNumber,
+          });
           // Handle successful code sending
           console.log("Code sent successfully");
         })
