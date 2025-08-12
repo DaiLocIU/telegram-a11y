@@ -41,11 +41,12 @@ export default defineComponent({
   },
   emits: ["update:modelValue"],
   setup(props, { emit }) {
-    const countryCodeInputRef = ref(null);
+    const countryCodeInputRef = ref<any>(null);
     const selectedCountry = ref(props.modelValue);
 
-    const forceUpdateUI = (newValue) => {
+    const forceUpdateUI = (newValue: ApiCountryCode | null) => {
       if (!newValue) {
+        if (!countryCodeInputRef.value) return;
         const vInputEl = countryCodeInputRef.value.$el;
         const vFieldEl = vInputEl.querySelector(".v-field");
         vInputEl.classList.remove("v-input--dirty", "v-input--is-active");
@@ -57,6 +58,7 @@ export default defineComponent({
         return;
       }
 
+      if (!countryCodeInputRef.value) return;
       const vInputEl = countryCodeInputRef.value.$el;
       const inputEl = vInputEl.querySelector("input");
       inputEl.value = newValue["defaultName"];
@@ -70,7 +72,9 @@ export default defineComponent({
         console.log("Model value changed:", newValue);
         if (!newValue) {
         }
-        forceUpdateUI(newValue);
+        if (!newValue || (typeof newValue === 'object' && 'countryCode' in newValue && 'iso2' in newValue && 'defaultName' in newValue)) {
+          forceUpdateUI(newValue as ApiCountryCode | null);
+        }
         // selectedCountryChange.value += 1; // Trigger re-render
       }
     );

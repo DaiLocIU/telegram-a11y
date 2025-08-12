@@ -27,8 +27,8 @@ import CountryCodeInput from "../../components/auth/CountryCodeInput.vue";
 import TextNumberPhone from "../../components/auth/TextNumberPhone.vue";
 import type { ApiCountryCode } from "../../api/types";
 import { getCountryFromPhoneNumber, formatPhoneNumber } from "../../utils/phoneNumber";
-import { useTelegram } from "@/composables/useTelegram";
-import useAuthStore from "@/stores/auth";
+import { useTelegram } from "../../composables/useTelegram";
+import useAuthStore from "../../stores/auth";
 
 const MIN_NUMBER_LENGTH = 7;
 
