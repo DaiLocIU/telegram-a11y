@@ -25,8 +25,6 @@
 import { defineComponent, onMounted, ref, watch } from "vue";
 import { isoToEmoji } from "../../utils/emoji/emoji";
 import type { ApiCountryCode } from "../../api/types";
-import { on } from "events";
-
 export default defineComponent({
   name: "CountryCodeInput",
   props: {
